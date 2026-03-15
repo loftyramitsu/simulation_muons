@@ -7,35 +7,37 @@ MyRunAction::MyRunAction()
     am->SetDefaultFileType("root");
     am->SetFileName("muon_detector");
     am->SetVerboseLevel(0);
-    // SetNtupleMerging(true) retiré : inutile et génère un warning en mode séquentiel
 
-    // -------------------------------------------------------
-    //  Histogrammes 1D — 100 bins
-    //  Le titre est au format ROOT : "titre;axeX;axeY"
-    //  L'option d'affichage "hist" est encodée dans le nom
-    //  via SetH1Ascii / ou imposée dans la macro plot.C ci-dessous.
-    //  Geant4 ne supporte pas SetDrawOption directement,
-    //  on le fixe dans plot.C (voir fin de fichier).
-    // -------------------------------------------------------
+    // Energie deposee par scintillateur : 0-100 MeV, 100 bins
     am->CreateH1("Edep_Scint1",
-        "Energie deposee Scint1;E_{dep} (MeV);Counts",
-        100, 0., 100.);   // MeV — muon de 10 GeV dépose ~2 MeV/cm dans plastique
+        "Energie deposee Scint1",
+        100, 0., 100.);
 
     am->CreateH1("Edep_Scint2",
-        "Energie deposee Scint2;E_{dep} (MeV);Counts",
+        "Energie deposee Scint2",
         100, 0., 100.);
 
     am->CreateH1("Edep_Scint3",
-        "Energie deposee Scint3;E_{dep} (MeV);Counts",
+        "Energie deposee Scint3",
         100, 0., 100.);
 
     am->CreateH1("Edep_Coincidence",
-        "Edep Scint2 en coincidence triple;E_{dep} Scint2 (MeV);Counts",
+        "Edep Scint2 en coincidence triple",
         100, 0., 100.);
 
-    // H2 : corrélation Scint1 vs Scint3 — 100×100 bins
+    // Muon seul vs secondaires (delta rays, e+/e-, gamma) — pas a pas
+    // Meme plage 0-100 MeV pour superposition directe sur plot.C
+    am->CreateH1("Edep_muon_only",
+        "Edep muon primaire",
+        100, 0., 100.);
+
+    am->CreateH1("Edep_secondaires",
+        "Edep particules secondaires",
+        100, 0., 100.);
+
+    // H2 : correlation Scint1 vs Scint3
     am->CreateH2("Edep_S1_vs_S3",
-        "Correlation Scint1 vs Scint3;E_{dep} Scint1 (MeV);E_{dep} Scint3 (MeV)",
+        "Correlation Scint1 vs Scint3",
         100, 0., 100.,
         100, 0., 100.);
 }

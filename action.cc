@@ -21,4 +21,5 @@ void MyActionInitialization::Build() const
     SetUserAction(new MyPrimaryGenerator());
     SetUserAction(runAction);
     SetUserAction(evtAction);
+    SetUserAction(new MySteppingAction());
 }
