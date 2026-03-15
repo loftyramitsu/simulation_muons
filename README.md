@@ -79,6 +79,7 @@ Lance les muons et enregistre les résultats dans `muon_detector.root`. Une barr
 ```
 
 Les scintillateurs sont orientés en **dalles verticales** : le muon descend selon −Z et traverse **12.5 cm** de plastique scintillant. Le monde fait **4 m × 4 m × 4 m**, centré à l'origine.
+> **Remarque** : Le monde est petit
 
 ---
 
@@ -149,13 +150,13 @@ Après un run batch, le fichier `muon_detector.root` est créé dans `build/`. I
 | `Edep_Coincidence` | Énergie déposée dans Scint2 pour les événements en coïncidence triple |
 | `Edep_S1_vs_S3` | Corrélation 2D Scint1 vs Scint3 (100×100 bins) |
 
-Un événement est compté en **coïncidence triple** si les trois scintillateurs déposent chacun plus de **0.1 MeV**. L'histogramme de coïncidence enregistre l'énergie de **Scint2** (scintillateur central), qui suit une distribution de Landau centrée autour de ~25 MeV.
+Un événement est compté en **coïncidence triple** si les trois scintillateurs détecte chacun un signal de plus de **1 MeV**. L'histogramme de coïncidence enregistre l'énergie de **Scint2** (scintillateur central), qui suit une distribution de Landau centrée autour de ~25 MeV.
 
 ---
 
 ## Visualiser les histogrammes
 
-Une macro ROOT `plot.C` est fournie. Elle affiche tous les histogrammes en mode `hist` et sauvegarde des PNG :
+Une macro ROOT `plot.C` est dans le dossier `build/`. Elle affiche tous les histogrammes en mode `hist` et sauvegarde des PNG :
 
 ```bash
 cd build
@@ -165,13 +166,13 @@ root -l plot.C
 Fichiers PNG générés :
 - `edep_scintillateurs.png` — les 3 scintillateurs côte à côte
 - `coincidence.png` — énergie déposée dans Scint2 en coïncidence triple
-- `correlation_2D.png` — carte de corrélation Scint1 vs Scint3
+- `correlation_2D.png` — corrélation Scint1 vs Scint3
 
 Pour ouvrir le fichier ROOT manuellement :
 
 ```bash
 root -l muon_detector.root
-root [0] Edep_Scint1->Draw("hist")
+root [0] Edep_Scint1 -> Draw("hist")
 ```
 
 ---
@@ -182,7 +183,7 @@ root [0] Edep_Scint1->Draw("hist")
 .
 ├── sim.cc              # Main
 ├── construction.hh/cc  # Géométrie (scintillateurs, béton, monde)
-├── generator.hh/cc     # Générateur de muons cosmiques réaliste
+├── generator.hh/cc     # Générateur de muons cosmiques
 ├── physics.hh/cc       # Liste de physique (EM standard + Decay)
 ├── detector.hh/cc      # Sensitive detector (énergie déposée)
 ├── event.hh/cc         # EventAction (coïncidence, histos, barre de progression)
@@ -202,7 +203,7 @@ root [0] Edep_Scint1->Draw("hist")
 |---|---|---|
 | Épaisseur béton | `run.mac` ou commande UI | 1000 mm |
 | Modèle angulaire | `run.mac` (`/gun/angularModel`) | 0 (cos²θ) |
-| Seuil coïncidence / acceptance | `event.hh` (`kThreshold`) | 0.1 MeV |
+| Seuil coïncidence / acceptance | `event.hh` (`kThreshold`) | 1 MeV |
 | Nombre d'événements | `run.mac` | 10000 |
 | Bins des histogrammes | `run.cc` | 100 |
 | Domaine en énergie | `generator.hh` (`kEmin`, `kEmax`) | 1 — 1000 GeV |
