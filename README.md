@@ -80,6 +80,8 @@ Lance les muons et enregistre les résultats dans `muon_detector.root`. Une barr
 
 Les scintillateurs sont orientés en **dalles verticales** : le muon descend selon −Z et traverse **12.5 cm** de plastique scintillant. Le monde fait **4 m × 4 m × 4 m**, centré à l'origine.
 
+> **Remarque** : Le monde est petit...
+
 ---
 
 ## Paramètres de la simulation
@@ -151,7 +153,7 @@ Après un run batch, le fichier `muon_detector.root` est créé dans `build/`. I
 | `Edep_secondaires` | Énergie déposée dans **Scint2** par les secondaires — delta rays, e±, γ (par événement) |
 | `Edep_S1_vs_S3` | Corrélation 2D Scint1 vs Scint3 (100×100 bins) |
 
-Un événement est compté en **coïncidence triple** si les trois scintillateurs déposent chacun plus de **0.1 MeV**. Scint2 est utilisé comme référence physique pour la coïncidence et l'analyse muon/secondaires.
+Un événement est compté en **coïncidence triple** si les trois scintillateurs déposent chacun plus de **1 MeV**. Scint2 est utilisé comme référence physique pour la coïncidence et l'analyse muon/secondaires.
 
 ---
 
@@ -173,7 +175,7 @@ graphes/muon_vs_secondaires_costheta_100cm.png
 graphes/correlation_2D_costheta_100cm.png
 ```
 
-Le suffixe change automatiquement si vous modifiez `run.mac`. Par exemple avec `/gun/angularModel 1` et `/det/setConcreteThickness 500 mm` :
+Le suffixe change automatiquement si on change `run.mac`. Par exemple avec `/gun/angularModel 1` et `/det/setConcreteThickness 500 mm` :
 ```
 graphes/edep_scintillateurs_dtheta_50cm.png
 ```
@@ -222,7 +224,7 @@ root [0] Edep_Scint1->Draw("hist")
 |---|---|---|
 | Épaisseur béton | `run.mac` ou commande UI | 1000 mm |
 | Modèle angulaire | `run.mac` (`/gun/angularModel`) | 0 (cos²θ) |
-| Seuil coïncidence / acceptance | `event.hh` (`kThreshold`) | 0.1 MeV |
+| Seuil coïncidence / acceptance | `event.hh` (`kThreshold`) | 1 MeV |
 | Nombre d'événements | `run.mac` | 10000 |
 | Bins des histogrammes | `run.cc` | 100 |
 | Domaine en énergie | `generator.hh` (`kEmin`, `kEmax`) | 1 — 1000 GeV |
