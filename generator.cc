@@ -5,14 +5,8 @@ MyPrimaryGenerator::MyPrimaryGenerator()
     : fAngularModel(0)
 {
     fParticleGun = new G4ParticleGun(1);
-
-    // -------------------------------------------------------
-    //  Supprimer les messages "was defined in terms of..."
-    //  La commande /gun/verbose 0 est la méthode portable.
-    // -------------------------------------------------------
     G4UImanager::GetUIpointer()->ApplyCommand("/gun/verbose 0");
 
-    // Messenger : choix du modèle angulaire depuis run.mac
     fMessenger = new G4GenericMessenger(this, "/gun/",
         "Parametres du generateur de muons cosmiques");
     fMessenger->DeclareMethod("angularModel",
@@ -26,41 +20,24 @@ MyPrimaryGenerator::~MyPrimaryGenerator()
     delete fParticleGun;
 }
 
-// -------------------------------------------------------
-//  Spectre en énergie — Eq.2, Shukla & Sankrith (2016)
-//  I(E) ∝ (E0 + E)^{-n} * (1 + E/ε)^{-1}   (E en GeV)
-// -------------------------------------------------------
 G4double MyPrimaryGenerator::EnergyPDF(G4double E) const
 {
     return std::pow(kE0 + E, -kN) / (1.0 + E / kEpsilon);
 }
 
-// -------------------------------------------------------
-//  Tirage de l'énergie cinétique par rejection sampling
-//
-//  Proposition q(E) ∝ 1/E (log-uniforme sur [Emin, Emax])
-//  → le poids est w(E) = I(E)/q(E) ∝ I(E)·E
-//  → max de w à E=Emin (I(E)·E est décroissant sur tout le domaine)
-// -------------------------------------------------------
 G4double MyPrimaryGenerator::SampleEnergy() const
 {
     const G4double logEmin = std::log(kEmin);
     const G4double logEmax = std::log(kEmax);
     const G4double wmax    = EnergyPDF(kEmin) * kEmin;
-
     G4double E, w;
     do {
         E = std::exp(logEmin + G4UniformRand() * (logEmax - logEmin));
         w = EnergyPDF(E) * E;
     } while (G4UniformRand() * wmax > w);
-
-    return E;   // GeV
+    return E;
 }
 
-// -------------------------------------------------------
-//  D(θ) — Eq.7, rapport de trajet incliné / vertical
-//  D(θ) = sqrt( (R/d)² cos²θ + 2(R/d) + 1 ) − (R/d)·cosθ
-// -------------------------------------------------------
 G4double MyPrimaryGenerator::D_theta(G4double theta) const
 {
     G4double c  = std::cos(theta);
@@ -68,16 +45,6 @@ G4double MyPrimaryGenerator::D_theta(G4double theta) const
     return std::sqrt(Rd * Rd * c * c + 2.0 * Rd + 1.0) - Rd * c;
 }
 
-// -------------------------------------------------------
-//  PDFs angulaires (avec jacobien sinθ)
-//
-//  Modèle 0 — cos²θ (Terre plate, Eq.11)
-//    f(θ) ∝ cos²θ · sinθ
-//    Maximum analytique : θ* = arctan(1/√2) ≈ 35.26°
-//
-//  Modèle 1 — D(θ) (Terre sphérique, Eq.9)
-//    f(θ) ∝ D(θ)^{-(n-1)} · sinθ
-// -------------------------------------------------------
 G4double MyPrimaryGenerator::ThetaPDF_cos2(G4double theta) const
 {
     return std::pow(std::cos(theta), 2) * std::sin(theta);
@@ -88,10 +55,6 @@ G4double MyPrimaryGenerator::ThetaPDF_D(G4double theta) const
     return std::pow(D_theta(theta), -(kN - 1.0)) * std::sin(theta);
 }
 
-// -------------------------------------------------------
-//  Tirage de θ par rejection sampling
-//  Le maximum est calculé numériquement (1000 points, négligeable en temps)
-// -------------------------------------------------------
 G4double MyPrimaryGenerator::SampleTheta() const
 {
     const int Nsteps = 1000;
@@ -101,13 +64,11 @@ G4double MyPrimaryGenerator::SampleTheta() const
         G4double f = (fAngularModel == 0) ? ThetaPDF_cos2(t) : ThetaPDF_D(t);
         if (f > fmax) fmax = f;
     }
-
     G4double theta, f;
     do {
         theta = G4UniformRand() * kThetaMax;
         f = (fAngularModel == 0) ? ThetaPDF_cos2(theta) : ThetaPDF_D(theta);
     } while (G4UniformRand() * fmax > f);
-
     return theta;
 }
 
@@ -117,52 +78,101 @@ G4double MyPrimaryGenerator::SamplePhi() const
 }
 
 // -------------------------------------------------------
-//  Génération du vertex primaire
+//  Verifie que la trajectoire (xt,yt,zt=z_scint1 + direction)
+//  intercepte bien Scint2 et Scint3.
+//
+//  Geometrie (dalle verticale, muon descend selon -Z) :
+//    Scint : X in [-L/2, L/2], Y in [-e/2, e/2], Z traverse l=12.5cm
+//    z_scint1 = +16 cm, z_scint2 = 0, z_scint3 = -16 cm
+//
+//  Pour aller de z_scint1 a z_scintN, le muon derive de :
+//    dx = (z_scint1 - z_scintN) * tan(theta) * cos(phi)
+//    dy = (z_scint1 - z_scintN) * tan(theta) * sin(phi)
+//  Le point d'arrivee est (xt+dx, yt+dy) et doit rester
+//  dans [-L/2, L/2] x [-e/2, e/2].
 // -------------------------------------------------------
+G4bool MyPrimaryGenerator::IsInAcceptance(
+    G4double xt, G4double yt,
+    G4double theta, G4double phi) const
+{
+    const G4double halfX = 49.5*CLHEP::cm / 2.0;
+    const G4double halfY =  2.0*CLHEP::cm / 2.0;
+    const G4double z1    =  0.16*CLHEP::m;
+    const G4double z2    =  0.;
+    const G4double z3    = -0.16*CLHEP::m;
+
+    G4double tanT   = std::tan(theta);
+    G4double cosPhi = std::cos(phi);
+    G4double sinPhi = std::sin(phi);
+
+    // Verifier Scint2
+    G4double dz2 = z1 - z2;
+    G4double x2  = xt + dz2 * tanT * cosPhi;
+    G4double y2  = yt + dz2 * tanT * sinPhi;
+    if (std::abs(x2) > halfX || std::abs(y2) > halfY) return false;
+
+    // Verifier Scint3
+    G4double dz3 = z1 - z3;
+    G4double x3  = xt + dz3 * tanT * cosPhi;
+    G4double y3  = yt + dz3 * tanT * sinPhi;
+    if (std::abs(x3) > halfX || std::abs(y3) > halfY) return false;
+
+    return true;
+}
+
 void MyPrimaryGenerator::GeneratePrimaries(G4Event *anEvent)
 {
     G4ParticleTable *table = G4ParticleTable::GetParticleTable();
 
-    // Rapport mu-/mu+ ≈ 1.3 au niveau de la mer
     G4ParticleDefinition *particle =
         (G4UniformRand() < 1.3 / 2.3)
         ? table->FindParticle("mu-")
         : table->FindParticle("mu+");
     fParticleGun->SetParticleDefinition(particle);
 
-    // ---------------------------------------------------
-    //  Énergie : SetParticleEnergy = énergie CINÉTIQUE
-    //  (≠ SetParticleMomentum qui causait le bug de spectre)
-    //  Pour E >> m_mu=105MeV : Ekin ≈ Etot, c'est exact à >99% dès 1 GeV
-    // ---------------------------------------------------
     G4double Ekin_GeV = SampleEnergy();
     fParticleGun->SetParticleEnergy(Ekin_GeV * CLHEP::GeV);
 
     // ---------------------------------------------------
-    //  Direction : muon descendant
-    //  θ = angle depuis la verticale descendante (-Z)
+    //  Tirage dans le cone d'acceptance :
+    //  On tire (theta, phi, xt, yt) jusqu'a ce que la
+    //  trajectoire intercepte les 3 scintillateurs.
+    //  En pratique converge en quelques essais.
     // ---------------------------------------------------
-    G4double theta = SampleTheta();
-    G4double phi   = SamplePhi();
+    const G4double scintHalfX = 49.5*CLHEP::cm / 2.0;
+    const G4double scintHalfY =  2.0*CLHEP::cm / 2.0;
+    const G4double z_scint1   =  0.16*CLHEP::m;
+
+    G4double theta, phi, xt, yt;
+    G4int    attempts = 0;
+
+    do {
+        theta = SampleTheta();
+        phi   = SamplePhi();
+        xt    = (G4UniformRand() - 0.5) * 2.0 * scintHalfX;
+        yt    = (G4UniformRand() - 0.5) * 2.0 * scintHalfY;
+        attempts++;
+        // Securite : si trop d'essais (muon tres incline), on accepte quand meme
+        // pour ne pas boucler indefiniment (rare pour theta < 70 deg)
+        if (attempts > 1000) break;
+    } while (!IsInAcceptance(xt, yt, theta, phi));
+
+    G4double sinT = std::sin(theta);
+    G4double cosT = std::cos(theta);
 
     fParticleGun->SetParticleMomentumDirection(G4ThreeVector(
-        std::sin(theta) * std::cos(phi),
-        std::sin(theta) * std::sin(phi),
-        -std::cos(theta)
+        sinT * std::cos(phi),
+        sinT * std::sin(phi),
+        -cosT
     ));
 
-    // ---------------------------------------------------
-    //  Position : plan horizontal à z = +3.0 m
-    //  (bien au-dessus du béton dont la face sup est à +2.5 m max)
-    //  Surface de génération 8m×8m : couvre les muons inclinés à 70°
-    //  qui peuvent dériver de ±(3m - 0m) × tan(70°) ≈ ±8m en XY
-    //  par rapport au centre des scintillateurs.
-    //  Le world fait 4m×4m → on reste dans [-4,+4]m.
-    // ---------------------------------------------------
-    G4double xyHalf = 3.5 * CLHEP::m;
-    G4double x0 = (G4UniformRand() - 0.5) * 2.0 * xyHalf;
-    G4double y0 = (G4UniformRand() - 0.5) * 2.0 * xyHalf;
+    // Remonter la trajectoire jusqu'au plan z = +3 m
+    const G4double z_start = 3.0 * CLHEP::m;
+    G4double t_back = (z_start - z_scint1) / cosT;
 
-    fParticleGun->SetParticlePosition(G4ThreeVector(x0, y0, 3.0 * CLHEP::m));
+    G4double x0 = xt - t_back * sinT * std::cos(phi);
+    G4double y0 = yt - t_back * sinT * std::sin(phi);
+
+    fParticleGun->SetParticlePosition(G4ThreeVector(x0, y0, z_start));
     fParticleGun->GeneratePrimaryVertex(anEvent);
 }

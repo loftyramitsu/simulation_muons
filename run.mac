@@ -8,7 +8,7 @@
 # ------------------------------------------------------------
 #  Épaisseur du béton (modifier selon le besoin)
 # ------------------------------------------------------------
-/det/setConcreteThickness 1000 mm
+/det/setConcreteThickness 100 mm
 
 # ------------------------------------------------------------
 #  Modèle de distribution angulaire des muons :

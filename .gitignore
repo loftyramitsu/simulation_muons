@@ -1,6 +1,9 @@
 # Dossier de build CMake
 build/
 
+# Dossier avec des graphes générés
+graphes/
+
 # Fichiers ROOT générés
 *.root
 

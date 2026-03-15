@@ -7,7 +7,7 @@ MyRunAction::MyRunAction()
     am->SetDefaultFileType("root");
     am->SetFileName("muon_detector");
     am->SetVerboseLevel(0);
-    //am->SetNtupleMerging(true);
+    // SetNtupleMerging(true) retiré : inutile et génère un warning en mode séquentiel
 
     // -------------------------------------------------------
     //  Histogrammes 1D — 100 bins
@@ -30,7 +30,7 @@ MyRunAction::MyRunAction()
         100, 0., 100.);
 
     am->CreateH1("Edep_Coincidence",
-        "Energie totale coincidence triple;E_{dep} total (MeV);Counts",
+        "Edep Scint2 en coincidence triple;E_{dep} Scint2 (MeV);Counts",
         100, 0., 100.);
 
     // H2 : corrélation Scint1 vs Scint3 — 100×100 bins

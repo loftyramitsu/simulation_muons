@@ -10,7 +10,8 @@ MyDetectorConstruction::MyDetectorConstruction()
       fScintMat(nullptr),
       fConcreteMat(nullptr),
       fWorldMat(nullptr),
-      fZgun(0.)
+      fZgun(0.),
+      fSolidConcrete(nullptr)
 {
     fMessenger = new G4GenericMessenger(this, "/det/",
         "Commandes du detecteur");
@@ -27,7 +28,34 @@ MyDetectorConstruction::~MyDetectorConstruction()
 void MyDetectorConstruction::SetConcreteThickness(G4double thickness)
 {
     fConcreteThickness = thickness;
-    G4RunManager::GetRunManager()->ReinitializeGeometry();
+
+    // Si le solide béton existe déjà (pas le premier appel),
+    // on modifie directement sa demi-épaisseur en place.
+    // C'est la méthode correcte : pas de recréation de volumes,
+    // juste une mise à jour du solide existant.
+    if (fSolidConcrete) {
+        fSolidConcrete->SetZHalfLength(0.5 * fConcreteThickness);
+
+        // Notifier Geant4 que la géométrie a changé
+        G4RunManager::GetRunManager()->GeometryHasBeenModified();
+
+        // Réinitialiser le run (obligatoire après GeometryHasBeenModified
+        // pour que beamOn reste fonctionnel)
+        G4UImanager *ui = G4UImanager::GetUIpointer();
+        ui->ApplyCommand("/run/initialize");
+
+        // Rafraîchir la vue OpenGL et remettre la caméra en place
+        ui->ApplyCommand("/vis/scene/notifyHandlers");
+        ui->ApplyCommand("/vis/drawVolume");
+        ui->ApplyCommand("/vis/viewer/set/viewpointThetaPhi 70 20");
+        ui->ApplyCommand("/vis/viewer/set/targetPoint 0 0 0.5 m");
+        ui->ApplyCommand("/vis/viewer/zoomTo 3");
+        ui->ApplyCommand("/vis/viewer/set/autoRefresh true");
+        ui->ApplyCommand("/vis/scene/add/trajectories smooth");
+        ui->ApplyCommand("/vis/scene/endOfEventAction accumulate 1");
+
+        ui->ApplyCommand("/vis/viewer/flush");
+    }
 }
 
 void MyDetectorConstruction::DefineMaterials()
@@ -113,10 +141,10 @@ G4VPhysicalVolume *MyDetectorConstruction::Construct()
     //   Attention : si fConcreteThickness > 2m le béton déborderait
     //   du world → le messenger le limite à 3.5m max.
     // -------------------------------------------------------
-    G4Box *solidConcrete = new G4Box("Concrete",
+    fSolidConcrete = new G4Box("Concrete",
         concreteHalfXY, concreteHalfXY, concreteHalfZ);
     G4LogicalVolume *logicConcrete = new G4LogicalVolume(
-        solidConcrete, fConcreteMat, "Concrete");
+        fSolidConcrete, fConcreteMat, "Concrete");
     new G4PVPlacement(0, G4ThreeVector(0., 0., 2.*m),
         logicConcrete, "Concrete", logicWorld, false, 0, true);
 

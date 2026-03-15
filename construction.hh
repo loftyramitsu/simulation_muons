@@ -10,6 +10,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4SDManager.hh"
 #include "G4RunManager.hh"
+#include "G4UImanager.hh"
 #include "G4GenericMessenger.hh"
 
 #include "detector.hh"
@@ -38,6 +39,7 @@ private:
 
     G4GenericMessenger *fMessenger;
 
+    G4Box    *fSolidConcrete;   // pointeur sur le solide béton — modifié par SetZHalfLength
     G4Material *fScintMat;
     G4Material *fConcreteMat;
     G4Material *fWorldMat;

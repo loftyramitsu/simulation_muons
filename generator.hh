@@ -50,6 +50,9 @@ private:
     G4double EnergyPDF     (G4double E_GeV) const;
     G4double SampleEnergy  ()               const;
 
+    G4bool   IsInAcceptance(G4double xt, G4double yt,
+                            G4double theta, G4double phi) const;
+
     G4double D_theta       (G4double theta) const;
     G4double ThetaPDF_cos2 (G4double theta) const;
     G4double ThetaPDF_D    (G4double theta) const;
