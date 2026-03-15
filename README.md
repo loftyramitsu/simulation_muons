@@ -1,6 +1,6 @@
 # Simulation d'un détecteur à muons cosmiques — Geant4
 
-Simulation d'un télescope à muons composé de trois scintillateurs plastiques et d'un bloc de béton d'épaisseur variable. Le programme détecte les muons cosmiques par coïncidence triple et enregistre l'énergie déposée dans chaque scintillateur sous forme d'histogrammes ROOT.
+Simulation d'un détecteur de muons composé de trois scintillateurs plastiques et d'un bloc de béton d'épaisseur variable. Le programme détecte les muons cosmiques par coïncidence triple et enregistre l'énergie déposée dans chaque scintillateur sous forme d'histogrammes ROOT.
 
 ---
 
@@ -17,8 +17,8 @@ Simulation d'un télescope à muons composé de trois scintillateurs plastiques 
 
 ```bash
 # Depuis le dossier du projet
-mkdir build && cd build
-cmake ..
+cmake -B build
+cd build
 make -j4
 ```
 
@@ -37,11 +37,11 @@ L'exécutable `sim` est créé dans le dossier `build/`. Les macros `init_vis.ma
 La fenêtre OpenGL s'ouvre avec la géométrie affichée. Pour lancer des événements :
 
 ```
-Idle> /run/beamOn 1
 Idle> /run/beamOn 10
+Idle> /run/beamOn 100
 ```
 
-> **Conseil** : utiliser `/run/beamOn 1` pour voir une trajectoire à la fois sans clignotement.
+> **Remarque** : ça marche tout aussi bien avec le petit bouton vert pour un seul évènement :)
 
 ### Mode batch (sans fenêtre, pour statistiques)
 
@@ -49,21 +49,24 @@ Idle> /run/beamOn 10
 ./sim run.mac
 ```
 
-Lance 1000 muons et enregistre les résultats dans `muon_detector.root`. Aucune fenêtre graphique n'est ouverte.
+Lance 1000 muons et enregistre les résultats dans `muon_detector.root`. Aucune fenêtre graphique n'est ouverte. Pour changer le nombre de muons envoyés, aller dans `run.mac` et changer la ligne
+```
+/run/beamOn 1000
+```
 
 ---
 
 ## Géométrie
 
 ```
-        muon (↓ -Z, 10 GeV)
+       muon (↓ -Z, 10 GeV)
              │
-    ┌────────┴────────┐   Scint1  z = +16 cm   (49.5 × 2 × 12.5 cm)
-    └─────────────────┘
-    
-    ┌────────────────────────────────────┐
+    ┌────────┴───────────────────────────┐
     │              BÉTON                 │   z = +2 m  (épaisseur variable)
     └────────────────────────────────────┘
+    
+    ┌────────────────────────────────────┐   Scint1  z = +16 cm   (49.5 × 2 × 12.5 cm)
+    └────────────────────────────────────┘ 
     
     ┌────────────────────────────────────┐   Scint2  z =   0 cm
     └────────────────────────────────────┘
