@@ -22,7 +22,7 @@ target_link_libraries(sim ${Geant4_LIBRARIES})
 # -------------------------------------------------------
 #  Copier les macros dans le répertoire de build
 # -------------------------------------------------------
-foreach(_mac init_vis.mac run.mac)
+foreach(_mac init_vis.mac run.mac plot.C)
     configure_file(
         ${PROJECT_SOURCE_DIR}/${_mac}
         ${PROJECT_BINARY_DIR}/${_mac}

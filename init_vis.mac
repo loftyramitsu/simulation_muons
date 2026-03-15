@@ -7,7 +7,7 @@
 
 # Vue isométrique
 /vis/viewer/set/viewpointThetaPhi 70 20
-/vis/viewer/set/style surface
+#/vis/viewer/set/style surface
 
 # Dessiner les volumes
 /vis/drawVolume

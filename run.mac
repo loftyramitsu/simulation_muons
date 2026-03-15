@@ -1,11 +1,26 @@
 # ============================================================
-#  run.mac  –  run en mode batch (sans fenêtre graphique)
+#  run.mac  —  run en mode batch
 #  Usage : ./sim run.mac
 # ============================================================
 
 /run/initialize
 
-# Épaisseur du béton (modifier selon le besoin)
-/det/setConcreteThickness 500 mm
+# ------------------------------------------------------------
+#  Épaisseur du béton (modifier selon le besoin)
+# ------------------------------------------------------------
+/det/setConcreteThickness 1000 mm
 
+# ------------------------------------------------------------
+#  Modèle de distribution angulaire des muons :
+#    0 = cos²θ        (approximation Terre plate, Eq.11)
+#                     Valide pour θ < 70°, formule classique
+#    1 = D(θ)         (Terre sphérique, Eq.9)
+#                     Meilleure description à grand angle (>70°)
+#                     Paramètre R/d = 174 (Shukla & Sankrith 2016)
+# ------------------------------------------------------------
+/gun/angularModel 0
+
+# ------------------------------------------------------------
+#  Nombre de muons à simuler
+# ------------------------------------------------------------
 /run/beamOn 10000
