@@ -1,0 +1,19 @@
+# Dossier de build CMake
+build/
+
+# Fichiers ROOT générés
+*.root
+
+# Fichiers de compilation
+*.o
+*.a
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# Images générées
+*.png
+
+# Fichiers systèmes
+.DS_Store

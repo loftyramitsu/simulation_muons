@@ -1,0 +1,11 @@
+# ============================================================
+#  run.mac  –  run en mode batch (sans fenêtre graphique)
+#  Usage : ./sim run.mac
+# ============================================================
+
+/run/initialize
+
+# Épaisseur du béton (modifier selon le besoin)
+/det/setConcreteThickness 500 mm
+
+/run/beamOn 10000

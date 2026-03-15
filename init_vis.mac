@@ -1,0 +1,41 @@
+# ============================================================
+#  init_vis.mac  –  visualisation sans clignotement
+# ============================================================
+
+/vis/open OGL 800x600-0+0
+/vis/verbose warnings
+
+# Vue isométrique
+/vis/viewer/set/viewpointThetaPhi 70 20
+/vis/viewer/set/style surface
+
+# Dessiner les volumes
+/vis/drawVolume
+
+/vis/viewer/set/autoRefresh true
+
+# -------------------------------------------------------
+#  Clé anti-clignotement :
+#  "accumulate N" garde les N derniers événements affichés
+#  en permanence, sans flash ni effacement brutal.
+#  Mettre N=1 pour ne voir qu'une trajectoire à la fois.
+# -------------------------------------------------------
+/vis/scene/add/trajectories smooth
+/vis/scene/endOfEventAction accumulate 1
+
+# Couleurs par type de particule
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/set mu-   blue
+/vis/modeling/trajectories/drawByParticleID-0/set mu+   red
+/vis/modeling/trajectories/drawByParticleID-0/set e-    yellow
+/vis/modeling/trajectories/drawByParticleID-0/set e+    orange
+/vis/modeling/trajectories/drawByParticleID-0/set gamma green
+
+# Repères d'axes (30 cm)
+/vis/scene/add/axes 0 0 0 0.3 m
+
+# -------------------------------------------------------
+#  Pour lancer des événements depuis l'interface
+#  sans clignotement, utiliser /run/beamOn 1
+#  (une trajectoire à la fois, remplacée à chaque appel)
+# -------------------------------------------------------
