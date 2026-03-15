@@ -2,7 +2,7 @@
 
 Simulation d'un détecteur de muons composé de trois scintillateurs plastiques et d'un bloc de béton d'épaisseur variable. Le programme détecte les muons cosmiques par coïncidence triple et enregistre l'énergie déposée dans chaque scintillateur sous forme d'histogrammes ROOT.
 
-Les muons sont générés avec un **spectre en énergie et une distribution angulaire réalistes**, basés sur les paramétrisations de [Shukla & Sankrith (2016)](https://arxiv.org/abs/1606.06907).
+Les muons sont générés avec un **spectre en énergie et une distribution angulaire réalistes**, basés sur les paramétrisations de [Shukla & Sankrith (2016)](https://arxiv.org/abs/1606.06907), et **contraints dans le cône d'acceptance** du détecteur.
 
 ---
 
@@ -51,7 +51,7 @@ Idle> /run/beamOn 100
 ./sim run.mac
 ```
 
-Lance les muons et enregistre les résultats dans `muon_detector.root`. Aucune fenêtre graphique n'est ouverte. Pour changer le nombre de muons envoyés, modifier dans `run.mac` :
+Lance les muons et enregistre les résultats dans `muon_detector.root`. Une barre de progression s'affiche dans le terminal. Pour changer le nombre de muons envoyés, modifier dans `run.mac` :
 ```
 /run/beamOn 10000
 ```
@@ -61,11 +61,11 @@ Lance les muons et enregistre les résultats dans `muon_detector.root`. Aucune f
 ## Géométrie
 
 ```
-       muons cosmiques (distribution réaliste)
+       muons cosmiques (distribution réaliste, cone d'acceptance)
        ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
 
     ┌────────────────────────────────────┐
-    │              BÉTON                 │   z = +2 m  (épaisseur variable)
+    │              BÉTON                 │   z = +2 m  (épaisseur variable, plafond)
     └────────────────────────────────────┘
 
     ┌────────────────────────────────────┐   Scint1  z = +16 cm   (49.5 × 2 × 12.5 cm)
@@ -78,7 +78,7 @@ Lance les muons et enregistre les résultats dans `muon_detector.root`. Aucune f
     └────────────────────────────────────┘
 ```
 
-Le monde fait **4 m × 4 m × 4 m**, centré à l'origine. Les muons sont générés depuis un plan horizontal à `z = +3 m`, au-dessus du béton.
+Les scintillateurs sont orientés en **dalles verticales** : le muon descend selon −Z et traverse **12.5 cm** de plastique scintillant. Le monde fait **4 m × 4 m × 4 m**, centré à l'origine.
 
 ---
 
@@ -96,7 +96,7 @@ Dans `run.mac` :
 /det/setConcreteThickness 1000 mm
 ```
 
-La géométrie se reconstruit automatiquement.
+La géométrie se reconstruit automatiquement et la vue 3D est rafraîchie.
 
 ### Modèle de distribution angulaire
 
@@ -114,6 +114,10 @@ Deux modèles sont disponibles, à choisir dans `run.mac` :
 
 Les deux sont tirés par **rejection sampling** sur θ ∈ [0°, 70°].
 
+### Cône d'acceptance
+
+Seuls les muons dont la trajectoire intercepte **les 3 scintillateurs** sont simulés. Pour chaque muon tiré, on vérifie que la dérive latérale entre Scint1 et Scint3 reste dans les dimensions du scintillateur (49.5 × 2 cm). Si ce n'est pas le cas, un nouveau tirage est effectué. Cela garantit que 100% des muons simulés contribuent aux histogrammes.
+
 ### Spectre en énergie
 
 Le spectre suit la paramétrisation de Shukla & Sankrith 2016 (Eq. 2, mesures de Tsukuba) :
@@ -129,7 +133,7 @@ I(E) ∝ (E₀ + E)^{−n} × (1 + E/ε)^{−1}
 | `ε = 854 GeV` | transition pion/kaon | correction à haute énergie |
 | Domaine | 1 — 1000 GeV | gamme physique réaliste |
 
-Le tirage est effectué par rejection sampling avec une proposition log-uniforme, particulièrement efficace pour une loi de puissance. Le rapport μ⁻/μ⁺ = 1.3 est appliqué à chaque événement.
+Le rapport μ⁻/μ⁺ = 1.3 est appliqué à chaque événement.
 
 ---
 
@@ -139,13 +143,13 @@ Après un run batch, le fichier `muon_detector.root` est créé dans `build/`. I
 
 | Objet ROOT | Contenu |
 |---|---|
-| `Edep_Scint1` | Énergie déposée dans Scint1 (MeV), 100 bins |
-| `Edep_Scint2` | Énergie déposée dans Scint2 (MeV), 100 bins |
-| `Edep_Scint3` | Énergie déposée dans Scint3 (MeV), 100 bins |
-| `Edep_Coincidence` | Énergie totale des événements en coïncidence triple (MeV) |
+| `Edep_Scint1` | Énergie déposée dans Scint1 (MeV) — muons ayant traversé uniquement |
+| `Edep_Scint2` | Énergie déposée dans Scint2 (MeV) — muons ayant traversé uniquement |
+| `Edep_Scint3` | Énergie déposée dans Scint3 (MeV) — muons ayant traversé uniquement |
+| `Edep_Coincidence` | Énergie déposée dans Scint2 pour les événements en coïncidence triple |
 | `Edep_S1_vs_S3` | Corrélation 2D Scint1 vs Scint3 (100×100 bins) |
 
-Un événement est compté en **coïncidence triple** si les trois scintillateurs déposent chacun plus de **0.1 MeV**.
+Un événement est compté en **coïncidence triple** si les trois scintillateurs déposent chacun plus de **0.1 MeV**. L'histogramme de coïncidence enregistre l'énergie de **Scint2** (scintillateur central), qui suit une distribution de Landau centrée autour de ~25 MeV.
 
 ---
 
@@ -160,7 +164,7 @@ root -l plot.C
 
 Fichiers PNG générés :
 - `edep_scintillateurs.png` — les 3 scintillateurs côte à côte
-- `coincidence.png` — énergie totale en coïncidence triple
+- `coincidence.png` — énergie déposée dans Scint2 en coïncidence triple
 - `correlation_2D.png` — carte de corrélation Scint1 vs Scint3
 
 Pour ouvrir le fichier ROOT manuellement :
@@ -181,7 +185,7 @@ root [0] Edep_Scint1->Draw("hist")
 ├── generator.hh/cc     # Générateur de muons cosmiques réaliste
 ├── physics.hh/cc       # Liste de physique (EM standard + Decay)
 ├── detector.hh/cc      # Sensitive detector (énergie déposée)
-├── event.hh/cc         # EventAction (coïncidence, remplissage histos)
+├── event.hh/cc         # EventAction (coïncidence, histos, barre de progression)
 ├── run.hh/cc           # RunAction (création et écriture ROOT)
 ├── action.hh/cc        # Initialisation des actions
 ├── init_vis.mac        # Macro de visualisation 3D
@@ -198,7 +202,7 @@ root [0] Edep_Scint1->Draw("hist")
 |---|---|---|
 | Épaisseur béton | `run.mac` ou commande UI | 1000 mm |
 | Modèle angulaire | `run.mac` (`/gun/angularModel`) | 0 (cos²θ) |
-| Seuil coïncidence | `event.hh` (`kThreshold`) | 0.1 MeV |
+| Seuil coïncidence / acceptance | `event.hh` (`kThreshold`) | 0.1 MeV |
 | Nombre d'événements | `run.mac` | 10000 |
 | Bins des histogrammes | `run.cc` | 100 |
 | Domaine en énergie | `generator.hh` (`kEmin`, `kEmax`) | 1 — 1000 GeV |

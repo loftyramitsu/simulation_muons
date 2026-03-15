@@ -24,7 +24,7 @@ public:
     virtual void BeginOfEventAction(const G4Event *event);
     virtual void EndOfEventAction(const G4Event *event);
 
-    static constexpr G4double kThreshold = 0.1 * CLHEP::MeV;
+    static constexpr G4double kThreshold = 1 * CLHEP::MeV;
 
 private:
     MyRunAction *fRunAction;
