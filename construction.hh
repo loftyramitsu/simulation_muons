@@ -25,13 +25,13 @@ public:
     virtual void ConstructSDandField();
 
     void SetConcreteThickness(G4double thickness);
-
-    // Position Z du canon (au-dessus de Scint1)
     G4double GetZgun() const { return fZgun; }
 
 private:
     G4double fConcreteThickness;
     G4double fZgun;
+
+    G4Box           *fSolidConcrete;
 
     G4LogicalVolume *fLogicScint1;
     G4LogicalVolume *fLogicScint2;
@@ -39,7 +39,6 @@ private:
 
     G4GenericMessenger *fMessenger;
 
-    G4Box    *fSolidConcrete;   // pointeur sur le solide béton — modifié par SetZHalfLength
     G4Material *fScintMat;
     G4Material *fConcreteMat;
     G4Material *fWorldMat;

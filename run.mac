@@ -5,10 +5,13 @@
 
 /run/initialize
 
+# La limite de photons optiques est geree dans physics.cc
+# via G4OpticalParameters (portable entre versions de Geant4)
+
 # ------------------------------------------------------------
 #  Épaisseur du béton (modifier selon le besoin)
 # ------------------------------------------------------------
-/det/setConcreteThickness 2000 mm
+/det/setConcreteThickness 1000 mm
 
 # ------------------------------------------------------------
 #  Modèle de distribution angulaire des muons :
@@ -23,4 +26,4 @@
 # ------------------------------------------------------------
 #  Nombre de muons à simuler
 # ------------------------------------------------------------
-/run/beamOn 5000
+/run/beamOn 10000

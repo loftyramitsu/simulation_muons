@@ -32,6 +32,7 @@
 /vis/modeling/trajectories/drawByParticleID-0/set e-    yellow
 /vis/modeling/trajectories/drawByParticleID-0/set e+    orange
 /vis/modeling/trajectories/drawByParticleID-0/set gamma green
+/vis/modeling/trajectories/drawByParticleID-0/set opticalphoton magenta
 
 # Axes centrés sur les scintillateurs
 /vis/scene/add/axes 0 0 0 0.3 m

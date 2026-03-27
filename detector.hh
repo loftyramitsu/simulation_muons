@@ -6,11 +6,11 @@
 #include "G4Step.hh"
 #include "G4SystemOfUnits.hh"
 
-// Noms des collections (partagés avec EventAction)
+// Noms des collections partagés avec EventAction
 namespace SDName {
-    inline const G4String Scint1 = "ScintSD1";
-    inline const G4String Scint2 = "ScintSD2";
-    inline const G4String Scint3 = "ScintSD3";
+    inline const G4String Scint1  = "ScintSD1";
+    inline const G4String Scint2  = "ScintSD2";
+    inline const G4String Scint3  = "ScintSD3";
     inline const G4String EdepKey = "Edep";
 }
 

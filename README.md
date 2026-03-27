@@ -45,7 +45,7 @@ Idle> /run/beamOn 100
 
 > **Remarque** : ça marche tout aussi bien avec le petit bouton vert pour un seul évènement :)
 
-### Mode batch (sans fenêtre, pour statistiques)
+### Mode batch (sans fenêtre, pour statistique)
 
 ```bash
 ./sim run.mac
@@ -148,12 +148,11 @@ Après un run batch, le fichier `muon_detector.root` est créé dans `build/`. I
 | `Edep_Scint1` | Énergie déposée dans Scint1 (MeV), muons ayant traversé uniquement |
 | `Edep_Scint2` | Énergie déposée dans Scint2 (MeV), muons ayant traversé uniquement |
 | `Edep_Scint3` | Énergie déposée dans Scint3 (MeV), muons ayant traversé uniquement |
-| `Edep_Coincidence` | Énergie déposée dans **Scint2** pour les événements en coïncidence triple |
 | `Edep_muon_only` | Énergie déposée dans **Scint2** par le muon primaire (par événement) |
 | `Edep_secondaires` | Énergie déposée dans **Scint2** par les secondaires — delta rays, e±, γ (par événement) |
 | `Edep_S1_vs_S3` | Corrélation 2D Scint1 vs Scint3 (100×100 bins) |
 
-Un événement est compté en **coïncidence triple** si les trois scintillateurs déposent chacun plus de **1 MeV**. Scint2 est utilisé comme référence physique pour la coïncidence et l'analyse muon/secondaires.
+Scint2 est utilisé comme référence physique pour l'analyse muon/secondaires.
 
 ---
 
@@ -170,7 +169,6 @@ Les PNG sont sauvegardés dans le dossier `graphes/` à la racine du projet (cr�
 
 ```
 graphes/edep_scintillateurs_costheta_100cm.png
-graphes/coincidence_costheta_100cm.png
 graphes/muon_vs_secondaires_costheta_100cm.png
 graphes/correlation_2D_costheta_100cm.png
 ```

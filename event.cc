@@ -29,7 +29,6 @@ void MyEventAction::BeginOfEventAction(const G4Event *event)
 
     G4int percent = (G4int)(100.0 * eventID / totalEvents);
 
-    // Construire la barre : [=========>          ] 42%
     const G4int barWidth = 40;
     G4int filled = barWidth * percent / 100;
 
@@ -41,7 +40,6 @@ void MyEventAction::BeginOfEventAction(const G4Event *event)
     }
     bar += "]";
 
-    // \r ecrase la ligne courante sans creer une nouvelle ligne
     G4cout << "\r  " << bar
            << " " << std::setw(3) << percent << "%"
            << "  (" << eventID << "/" << totalEvents << ")"
@@ -51,15 +49,14 @@ void MyEventAction::BeginOfEventAction(const G4Event *event)
         G4cout << G4endl;
 }
 
-// Lit l'energie deposee depuis la HitsMap du SD idx
+// Lit l'énergie déposée depuis la HitsMap du SD idx
 G4double MyEventAction::GetEdep(const G4Event *event, G4int idx) const
 {
     auto *sdm = G4SDManager::GetSDMpointer();
 
     G4String names[3] = { SDName::Scint1, SDName::Scint2, SDName::Scint3 };
-    if (fHCID[idx] < 0) {
+    if (fHCID[idx] < 0)
         fHCID[idx] = sdm->GetCollectionID(names[idx] + "/" + SDName::EdepKey);
-    }
 
     auto *hce = event->GetHCofThisEvent();
     if (!hce) return 0.;
@@ -81,24 +78,20 @@ void MyEventAction::EndOfEventAction(const G4Event *event)
 
     auto *am = G4AnalysisManager::Instance();
 
-    // Ne remplir que si le muon a effectivement traverse le scintillateur
+    // Histos 0-2 : énergie déposée par scintillateur
     for (G4int i = 0; i < 3; i++) {
         if (edep[i] > kThreshold)
             am->FillH1(i, edep[i] / CLHEP::MeV);
     }
 
-    // Coincidence triple : les 3 scintillateurs au-dessus du seuil.
-    // On enregistre l'energie de Scint2 (scintillateur central,
-    // reference experimentale habituelle).
-    // La somme n'a pas de sens physique : chaque PM mesure
-    // independamment l'energie deposee dans son scintillateur.
-    if (edep[0] > kThreshold && edep[1] > kThreshold && edep[2] > kThreshold) {
+    // Histo 3 : coïncidence triple — énergie de Scint2
+    if (edep[1] > kThreshold)
         am->FillH1(3, edep[1] / CLHEP::MeV);
-    }
 
+    // Histo 4 : corrélation 2D Scint1 vs Scint3
     am->FillH2(0, edep[0] / CLHEP::MeV, edep[2] / CLHEP::MeV);
 
-    // Muon vs secondaires : un point par evenement
+    // Histos 4-5 : muon vs secondaires (depuis SteppingAction)
     if (fEdepMuon > 0.) am->FillH1(4, fEdepMuon / CLHEP::MeV);
     if (fEdepSec  > 0.) am->FillH1(5, fEdepSec  / CLHEP::MeV);
 }

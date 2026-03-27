@@ -24,16 +24,16 @@ public:
     virtual void BeginOfEventAction(const G4Event *event);
     virtual void EndOfEventAction(const G4Event *event);
 
-    static constexpr G4double kThreshold = 0.1 * CLHEP::MeV;
+    static constexpr G4double kThreshold = 0.01 * CLHEP::MeV;
 
     // Accumulation muon/secondaires depuis SteppingAction
-    void AddEdepMuon(G4double e)  { fEdepMuon += e; }
-    void AddEdepSec (G4double e)  { fEdepSec  += e; }
+    void AddEdepMuon(G4double e) { fEdepMuon += e; }
+    void AddEdepSec (G4double e) { fEdepSec  += e; }
     friend class MySteppingAction;
 
 private:
-    G4double fEdepMuon;
-    G4double fEdepSec;
+    G4double     fEdepMuon;
+    G4double     fEdepSec;
     MyRunAction *fRunAction;
 
     // mutable : résolution paresseuse des IDs dans une méthode const
